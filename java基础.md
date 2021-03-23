@@ -342,3 +342,39 @@ toString() // 将对象转成字符串 默认是现实 类名@对象的内存地
 
 > StringBuilder 线程不安全
 
+
+
+# 多线程
+
+> 开启多线程的两种方式
+
+1.编写一个类，直接继承java.lang.Thread,重写run方法
+
+```java
+// 定义线程类
+public class MyThread extends Thread{
+    public void run(){
+        System.print.out("do some thing");
+    }
+}
+// 创建线程对象
+MyThread t = new MyThread();
+// 启动线程
+t.start();
+```
+
+2.编写一个类，实现java.lang.Runnable接口，实现run方法
+
+```java
+// 定义一个可运行的类
+public class MyRunnable implements Runnable{
+    public void run(){
+           System.print.out("do some thing");
+    }
+}
+// 创建线程对象
+Thread t = new Thread(new MyRunnable);
+// 启动线程
+t.start();
+```
+
