@@ -222,7 +222,7 @@ func (this *MyClient) HelloWorld(a string,b *string) error
 
 ###    linux
 
-## 编译	
+#### 编译	
 
 common.proto
 
@@ -245,5 +245,138 @@ message Response {
 
 ```
 
+##### 添加RPC服务
 
+> 语法
 
+```protobuf
+service 服务名 {
+	rpc 函数名（参数：消息体） returns (返回值：消息)
+}
+
+```
+
+> 例子
+
+```protobuf
+message People {
+	string name = 1;
+}
+message Student {
+	string age = 2;
+}
+service hellow {
+	rpc HelloWorld(People) returns(Student);
+}
+```
+
+> 知识点
+
+默认，protobuf编译期间，不编译服务。要想编译，要用gRPC
+
+使用的编译命令为：
+
+`protoc --go_out=plugins=grpc:./ *.proto` 
+
+## GRPC
+
+### 安装
+
+` go get -u -v google.golang.org/grpc`
+
+### 使用
+
+> 定义proto文件
+
+```protobuf
+syntax = "proto3";
+option go_package = "pb/";
+
+message Teacher {
+  int32 age = 1;
+  string name = 2;
+}
+
+service Say {
+   rpc Name(Teacher) returns (Teacher);
+}
+```
+
+> 编译
+
+``protoc --go_out=plugins=grpc:./ *.proto` `
+
+> 服务端
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"google.golang.org/grpc"
+	"net"
+	"rpc-01/pb"
+)
+
+// 定义类
+type Teacher struct {
+}
+
+// 实现接口
+func (this *Teacher) Name(ctx context.Context, teacher *pb.Teacher) (*pb.Teacher, error) {
+	teacher.Name += "is sleeping"
+	return teacher, nil
+
+}
+func main() {
+	// 初始化一个grpc对象
+	grpcServer := grpc.NewServer()
+	// 注册服务
+	pb.RegisterSayServer(grpcServer, new(Teacher))
+	// 设置监听
+	listener, err := net.Listen("tcp", "127.0.0.1:8090")
+	if err != nil {
+		fmt.Println("listen fail", err)
+		return
+	}
+	defer listener.Close()
+	// 启动服务
+	grpcServer.Serve(listener)
+}
+
+```
+
+> 客户端
+
+```go
+package main
+
+import (
+   "context"
+   "fmt"
+   "google.golang.org/grpc"
+   "rpc-01/pb"
+)
+
+func main()  {
+   // 连接grpc服务
+   // grpc.WithInsecure() 以安全的方式编译
+   conn,err := grpc.Dial("127.0.0.1:8090",grpc.WithInsecure())
+   if err != nil {
+      fmt.Println("Dial fail", err)
+      return
+   }
+   defer conn.Close()
+   // 初始化grpc客户端
+   client := pb.NewSayClient(conn)
+   // 调用远程服务
+   // context.TODO() 表示一个空对象，占位
+   res,err :=client.Name(context.TODO(),&pb.Teacher{
+      Age:  10,
+      Name: "laowang",
+   })
+   fmt.Println(res,err)
+
+}
+```
