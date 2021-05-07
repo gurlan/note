@@ -378,3 +378,37 @@ Thread t = new Thread(new MyRunnable);
 t.start();
 ```
 
+# SpringBoot
+
+## 原理
+
+> pom.xml
+
+> 启动器--SpringBoot的启动场景
+
+```xml
+ <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+自动导入web环境所有依赖
+```
+
+> 注解
+
+```
+@SpringBootConfiguration：SpringBoot的配置类
+	@Configuration：Spring配置类
+	@Component：说明这是一个组件
+	
+@EnableAutoConfiguration：自动配置
+	@AutoConfigurationPackage：自动配置包
+	@Import({Registrar.class})：导入选择器
+	@Import({AutoConfigurationImportSelector.class})
+
+
+
+
+
+
+```
