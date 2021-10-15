@@ -680,12 +680,3 @@ func main() {
 
 现在每个工作者并发体的创建、运行、暂停和退出都是在`main`函数的安全控制之下了。
 
-# Go语言核心36讲
-
-## 01 | 工作区和GOPATH
-
-- GOROOT：Go 语言安装根目录的路径，也就是 GO 语言的安装路径。
-- GOPATH：若干工作区目录的路径。是我们自己定义的工作空间。
-- GOBIN：GO 程序生成的可执行文件（executable file）的路径。
-
-![img](https://static001.geekbang.org/resource/image/2f/3c/2fdfb5620e072d864907870e61ae5f3c.png)
