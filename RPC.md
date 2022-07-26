@@ -1,9 +1,3 @@
-
-
-
-
-
-
 # RPC协议
 
 ## RPC实用步骤
@@ -84,36 +78,36 @@ server.go
 package main
 
 import (
-	"fmt"
-	"net"
-	"net/rpc"
+    "fmt"
+    "net"
+    "net/rpc"
 )
 
 func main() {
-	// 注册rpc服务
-	err := rpc.RegisterName("world", new(World))
-	if err != nil {
-		fmt.Println("服务注册失败")
-		return
-	}
-	// 设置监听
-	listener, err := net.Listen("tcp", "127.0.0.1:8081")
-	if err != nil {
-		fmt.Println("net.Listen error:", err)
-		return
-	}
-	fmt.Println("开始监听")
-	defer listener.Close()
-	// 建立连接
-	conn, err := listener.Accept()
-	if err != nil {
-		fmt.Println("net.Accept error:", err)
-		return
-	}
-	defer conn.Close()
-	fmt.Println("连接建立成功")
-	// 绑定服务
-	//rpc.ServeConn(conn)
+    // 注册rpc服务
+    err := rpc.RegisterName("world", new(World))
+    if err != nil {
+        fmt.Println("服务注册失败")
+        return
+    }
+    // 设置监听
+    listener, err := net.Listen("tcp", "127.0.0.1:8081")
+    if err != nil {
+        fmt.Println("net.Listen error:", err)
+        return
+    }
+    fmt.Println("开始监听")
+    defer listener.Close()
+    // 建立连接
+    conn, err := listener.Accept()
+    if err != nil {
+        fmt.Println("net.Accept error:", err)
+        return
+    }
+    defer conn.Close()
+    fmt.Println("连接建立成功")
+    // 绑定服务
+    //rpc.ServeConn(conn)
     jsonrpc.ServeConn(conn)
 }
 
@@ -123,10 +117,9 @@ type World struct {
 }
 
 func (this *World) HelloWorld(name string, resp *string) error {
-	*resp = name+"你好"
-	return nil
+    *resp = name+"你好"
+    return nil
 }
-
 ```
 
 client.go
@@ -135,29 +128,28 @@ client.go
 package main
 
 import (
-	"fmt"
-	"net/rpc"
+    "fmt"
+    "net/rpc"
 )
 
 func main() {
-	// 连接服务器
-	// conn, err := rpc.Dial("tcp", "127.0.0.1:8081")
-	conn, err := jsonrpc.Dial("tcp", "111.230.180.43:8090")
-	if err != nil {
-		fmt.Println("连接失败")
-		return
-	}
-	defer conn.Close()
-	// 调用远程方法
-	resp := ""
-	err = conn.Call("world.HelloWorld", "gaojian", &resp)
-	if err != nil {
-		fmt.Println("服务调用失败")
-		return
-	}
-	fmt.Println(resp)
+    // 连接服务器
+    // conn, err := rpc.Dial("tcp", "127.0.0.1:8081")
+    conn, err := jsonrpc.Dial("tcp", "111.230.180.43:8090")
+    if err != nil {
+        fmt.Println("连接失败")
+        return
+    }
+    defer conn.Close()
+    // 调用远程方法
+    resp := ""
+    err = conn.Call("world.HelloWorld", "gaojian", &resp)
+    if err != nil {
+        fmt.Println("服务调用失败")
+        return
+    }
+    fmt.Println(resp)
 }
-
 ```
 
 json 版RPC
@@ -165,7 +157,7 @@ json 版RPC
 - 实用nc -l ip port 充当服务器
 
 - client.go充当客户端。发起通信，会产生乱码
-
+  
   因为：go rpc使用了go语言特有的序列化gob，其他语言不能解析
 
 - 使用通用的序列化
@@ -214,15 +206,15 @@ func (this *MyClient) HelloWorld(a string,b *string) error
 
   下载地址： https://github.com/protocolbuffers/protobuf/releases 
 
-​	解压到文件夹，配置环境变量
+​    解压到文件夹，配置环境变量
 
 > 安装protoc-gen-go
 
 - 在终端直接执行 `go get -u github.com/golang/protobuf/protoc-gen-go`，可以在你的%GOPATH%/bin路径下找到一个 protoc-gen-go.exe
 
-###    linux
+### linux
 
-#### 编译	
+#### 编译
 
 common.proto
 
@@ -231,8 +223,8 @@ syntax = "proto3";
 
 // 指定所在包名
 package pb;
-// 不指定该选项没有编译过 不知道为啥
-option go_package = "test/";
+// 前面是生成代码位置;后是别名
+option go_package = "test/;test";
 // 定义消息体
 message Response {
     // 状态编码
@@ -242,7 +234,6 @@ message Response {
     // 返回数据
     bytes result = 3;
 }
-
 ```
 
 ##### 添加RPC服务
@@ -251,22 +242,21 @@ message Response {
 
 ```protobuf
 service 服务名 {
-	rpc 函数名（参数：消息体） returns (返回值：消息)
+    rpc 函数名（参数：消息体） returns (返回值：消息)
 }
-
 ```
 
 > 例子
 
 ```protobuf
 message People {
-	string name = 1;
+    string name = 1;
 }
 message Student {
-	string age = 2;
+    string age = 2;
 }
 service hellow {
-	rpc HelloWorld(People) returns(Student);
+    rpc HelloWorld(People) returns(Student);
 }
 ```
 
@@ -276,7 +266,7 @@ service hellow {
 
 使用的编译命令为：
 
-`protoc --go_out=plugins=grpc:./ *.proto` 
+`protoc --go-grpc_out=./ --go_out=./  *.proto  ` 
 
 ## GRPC
 
@@ -290,21 +280,29 @@ service hellow {
 
 ```protobuf
 syntax = "proto3";
-option go_package = "pb/";
+option go_package="./;product";
 
-message Teacher {
-  int32 age = 1;
-  string name = 2;
+service ProductInfo {
+  //添加商品
+  rpc addProduct(Product) returns (ProductId);
+  //获取商品
+  rpc getProduct(ProductId) returns (Product);
 }
 
-service Say {
-   rpc Name(Teacher) returns (Teacher);
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message ProductId {
+  string value = 1;
 }
 ```
 
 > 编译
 
-``protoc --go_out=plugins=grpc:./ *.proto` `
+`protoc --go-grpc_out=./ --go_out=./ *.proto `
 
 > 服务端
 
@@ -313,36 +311,62 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/gofrs/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"log"
 	"net"
-	"rpc-01/pb"
+	"test/product"
 )
 
-// 定义类
-type Teacher struct {
+type server struct {
+	productMap map[string]*product.Product
+	product.UnimplementedProductInfoServer
 }
 
-// 实现接口
-func (this *Teacher) Name(ctx context.Context, teacher *pb.Teacher) (*pb.Teacher, error) {
-	teacher.Name += "is sleeping"
-	return teacher, nil
-
-}
-func main() {
-	// 初始化一个grpc对象
-	grpcServer := grpc.NewServer()
-	// 注册服务
-	pb.RegisterSayServer(grpcServer, new(Teacher))
-	// 设置监听
-	listener, err := net.Listen("tcp", "127.0.0.1:8090")
+//添加商品
+func (s *server) AddProduct(ctx context.Context, req *product.Product) (resp *product.ProductId, err error) {
+	resp = &product.ProductId{}
+	out, err := uuid.NewV4()
 	if err != nil {
-		fmt.Println("listen fail", err)
+		return resp, status.Errorf(codes.Internal, "err while generate the uuid ", err)
+	}
+
+	req.Id = out.String()
+	if s.productMap == nil {
+		s.productMap = make(map[string]*product.Product)
+	}
+
+	s.productMap[req.Id] = req
+	resp.Value = req.Id
+	return
+}
+
+//获取商品
+func (s *server) GetProduct(ctx context.Context, req *product.ProductId) (resp *product.Product, err error) {
+	if s.productMap == nil {
+		s.productMap = make(map[string]*product.Product)
+	}
+
+	resp = s.productMap[req.Value]
+	return
+}
+
+func main() {
+	listener, err := net.Listen("tcp", ":8890")
+	if err != nil {
+		log.Println("net listen err ", err)
 		return
 	}
-	defer listener.Close()
-	// 启动服务
-	grpcServer.Serve(listener)
+
+	s := grpc.NewServer()
+	product.RegisterProductInfoServer(s, &server{})
+
+	if err := s.Serve(listener); err != nil {
+		log.Println("failed to serve...", err)
+		return
+	}
 }
 
 ```
@@ -353,30 +377,52 @@ func main() {
 package main
 
 import (
-   "context"
-   "fmt"
-   "google.golang.org/grpc"
-   "rpc-01/pb"
+	"context"
+	"google.golang.org/grpc"
+	"log"
+	"test/product"
 )
 
-func main()  {
-   // 连接grpc服务
-   // grpc.WithInsecure() 以安全的方式编译
-   conn,err := grpc.Dial("127.0.0.1:8090",grpc.WithInsecure())
-   if err != nil {
-      fmt.Println("Dial fail", err)
-      return
-   }
-   defer conn.Close()
-   // 初始化grpc客户端
-   client := pb.NewSayClient(conn)
-   // 调用远程服务
-   // context.TODO() 表示一个空对象，占位
-   res,err :=client.Name(context.TODO(),&pb.Teacher{
-      Age:  10,
-      Name: "laowang",
-   })
-   fmt.Println(res,err)
+const (
+	address = "localhost:8890"
+)
 
+func main() {
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Println("did not connect.", err)
+		return
+	}
+	defer conn.Close()
+
+	client := product.NewProductInfoClient(conn)
+	ctx := context.Background()
+
+	id := AddProduct(ctx, client)
+	GetProduct(ctx, client, id)
+	select {}
 }
+
+// 添加一个测试的商品
+func AddProduct(ctx context.Context, client product.ProductInfoClient) (id string) {
+	aMac := &product.Product{Name: "Mac Book Pro 2019", Description: "From Apple Inc."}
+	productId, err := client.AddProduct(ctx, aMac)
+	if err != nil {
+		log.Println("add product fail.", err)
+		return
+	}
+	log.Println("add product success, id = ", productId.Value)
+	return productId.Value
+}
+
+// 获取一个商品
+func GetProduct(ctx context.Context, client product.ProductInfoClient, id string) {
+	p, err := client.GetProduct(ctx, &product.ProductId{Value: id})
+	if err != nil {
+		log.Println("get product err.", err)
+		return
+	}
+	log.Printf("get prodcut success : %+v\n", p)
+}
+
 ```
